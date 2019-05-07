@@ -13,6 +13,7 @@ EXCLUSION=1
 
 if [ ! -d "resize" ]; then
 	mkdir "resize"
+	let EXCLUSION++
 else
 	let EXCLUSION++
 fi
