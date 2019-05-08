@@ -1,42 +1,44 @@
 #!/bin/sh
 
-# if [ "$1" = "" ]
-# then
-#     echo "[ERROR] 引数にリストのファイルを指定してください。"
-#     exit
-# fi
+ALLFILE=0
 
+count() {
+    while [ "$1" ]; do
+        if [ -d "$1" ]; then
+            count "$1"/*
+        else
+            if [[ "$1"  = *.jpg  ]]; then
+                let ALLFILE++
+            fi
+            if [[ "$1"  = *.png  ]]; then
+                let ALLFILE++
+            fi
 
+        fi
+        shift
+    done
+}
 
-ALLFILE=$(ls ./ | wc -l)
-EXCLUSION=1
-
-if [ ! -d "resize" ]; then
-	mkdir "resize"
-	let EXCLUSION++
-else
-	let EXCLUSION++
-fi
-
-CONVERTFILE=$(( $ALLFILE - $EXCLUSION))
-
-echo "Converting " $CONVERTFILE "files"
+count *
 
 COUNTER=0
 
-for file in *.jpg *.JPG *.jpeg *.JPEG;
-do
-    [ -f "$file" ] || continue
-    # COUNTER=$((counter++))
-    let COUNTER++
-	echo "convert" $file "-" $COUNTER "/" $CONVERTFILE;
-    convert -resize 1200x\> -quality 80 "$file" "resize/$file"
-done
+imagemin() {
+    while [ "$1" ]; do
+        if [ -d "$1" ]; then
+            imagemin "$1"/*
+        else
+            if [ "$1"  = *.jpg -o "$1" *.png ]; then
+                let COUNTER++
+                echo "convert" $1 "-" $COUNTER "/" $ALLFILE;
+                convert -resize 1200x\> -quality 80 "$1" "$1"
+            fi
 
-for file in *.png;
-do
-	let COUNTER++
-	echo "convert" $file "-" $COUNTER "/" $CONVERTFILE;
-    [ -f "$file" ] || continue
-	convert -resize 1200x\> -quality 80 "$file" "resize/$file"
-done
+        fi
+        shift
+    done
+}
+
+imagemin *
+
+
